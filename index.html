@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Coursework</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"
+    />
+    <script src="lessons.js"></script>
+    <link rel="stylesheet" href="classes.css" />
+   
+  </head>
+  <body>
+    <div id="app">
+      <header>
+        <h1 v-text="sitename"></h1>
+      </header>
+
+      <div v-if="showLesson">
+        <div>
+          <button
+            v-on:click="showCheckout"
+            v-if="cartItemCount > 0"
+            class="button"
+          >
+            {{ cartItemCount }}
+            <span class="fas fa-cart-plus">Checkout</span>
+          </button>
+        </div>
+        <div>
+          <div>
+            <h4>Sort by:</h4>
+
+            <label>
+              <input
+                v-model="sort"
+                type="radio"
+                name="Sort"
+                value="price"
+                v-on:click="sortedLessons('price', ord)"
+              />
+              Price
+            </label>
+            <label>
+              <input v-model="sort" type="radio" name="Sort" value="subj" />
+              Subject
+            </label>
+            <label>
+              <input v-model="sort" type="radio" name="Sort" value="loc" />
+              Location
+            </label>
+            <label>
+              <input v-model="sort" type="radio" name="Sort" value="avail" />
+              Availability
+            </label>
+
+            <h4>Order</h4>
+
+            <label>
+              <input v-model="ord" type="radio" name="Order" value="asc" />
+              Ascending </label
+            ><br />
+            <label>
+              <input type="radio" name="Order" value="des" v-model="ord" />
+              Descending </label
+            ><br />
+          </div>
+        </div>
+      </div>
+
+      <br />
+      
+
+      <div v-if="showLesson">
+        <div v-for="lesson in sortedLessons(sort, ord)">
+          <div class="row">
+            <div class="column">
+              <div class="lesson">
+                <p v-text="lesson.subject"></p>
+                <p>Location: {{ lesson.location }}</p>
+                <img v-bind:src="lesson.image" />
+                <p>Price: £{{ lesson.price }}</p>
+                <p>Spaces: {{ lesson.space - cartCount(lesson)}}</p>
+                <button
+                  v-on:click="addToCart(lesson)"
+                  v-if="canAddToCart(lesson)"
+                >
+                  Add to cart
+                </button>
+                <button disabled="disabled" v-else>Add to cart</button>
+                <span v-if="lesson.space - cartCount(lesson)"> </span>
+                <span v-else-if="lesson.space - cartCount(lesson) < 10"> </span>
+                <span v-else>Buy now!</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div v-else>
+        <h3>Shopping Cart Page</h3>
+        <div>
+          <button v-on:click="showCheckout"><span></span>Go back</button>
+        </div>
+        <div v-for="lesson in cart">
+          <h4 v-text="lesson.subject"></h4>
+          <figure>
+            <img v-bind:src="lesson.image" />
+          </figure>
+          <p>Price: £{{lesson.price}}</p>
+          <button v-on:click="removeItem(lesson)">Remove Item</button><br />
+        </div>
+
+        <form>
+          <div class="row m-5">
+            <div class="form-group col-4">
+              <input
+                v-model="order.name"
+                class="form-control border-top-0 border-left-0 border-right-0"
+                placeholder=" Name"
+                type="text"
+                v-on:keypress="isLetter($event)"
+              />
+            </div>
+            <div class="form-group col-4">
+              <input
+                v-model.number="order.number"
+                class="form-control border-top-0 border-left-0 border-right-0"
+                placeholder="Phone"
+                type="number"
+                v-on:keypress="isLetterOrNumber($event)"
+              />
+            </div>
+            <div class="form-group col-4">
+              <div class="form-group col-4">
+                <button
+                  class="btn btn-primary"
+                  v-if="checkout"
+                  v-on:click="submitForm"
+                >
+                  Checkout
+                </button>
+
+                <button class="btn btn-secondary" disabled v-else>
+                  Checkout
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <br />
+    </div>
+    <script>
+      const instance = new Vue({
+        el: "#app",
+
+        data: {
+          order: {
+            name: "",
+            number: "",
+          },
+          data: () => ({
+            name: "",
+            firstName: "",
+          }),
+          sitename: "After School Club",
+          showLesson: true,
+          lessons: lessons,
+          cart: [],
+          sort: "subj",
+          ord: "asc",
+        },
+        methods: {
+          removeItem(lesson) {
+            this.cart.splice(this.cart.indexOf(lesson));
+          },
+          showCheckout() {
+            this.showLesson = this.showLesson ? false : true;
+          },
+          addToCart(lesson) {
+            this.cart.push(lesson);
+          },
+          canAddToCart(lesson) {
+            return lesson.space > this.cartCount(lesson);
+          },
+          submitForm() {
+            alert("Order submitted!");
+          },
+          isLetter(e) {
+            let char = String.fromCharCode(e.keyCode); 
+            if (/^[A-Za-z]+$/.test(char)) return true;
+            else e.preventDefault(); 
+          },
+          isLetterOrNumber(e) {
+            let char = String.fromCharCode(e.keyCode);
+            if (/^[A-Za-z0-9]+$/.test(char)) return true;
+            else e.preventDefault();
+          },
+          sortedLessons(sort, order) {
+            let LessonsArray = this.lessons.slice(0);
+            switch (sort) {
+              case "price":
+                if (order == "asc") {
+                  function comparePrice(a, b) {
+                    if (a.price > b.price) return 1;
+                    if (a.price < b.price) return -1;
+                    return 0;
+                  }
+                  return LessonsArray.sort(comparePrice);
+                } else {
+                  function comparePrice(a, b) {
+                    if (a.price > b.price) return -1;
+                    if (a.price < b.price) return 1;
+                    return 0;
+                  }
+                  return LessonsArray.sort(comparePrice);
+                }
+                break;
+
+              case "loc":
+                if (order == "asc") {
+                  function compareLocation(a, b) {
+                    if (a.location > b.location) return 1;
+                    if (a.location < b.location) return -1;
+                    return 0;
+                  }
+                  return LessonsArray.sort(compareLocation);
+                } else {
+                  function compareLocation(a, b) {
+                    if (a.location > b.location) return -1;
+                    if (a.location < b.location) return 1;
+                    return 0;
+                  }
+                  return LessonsArray.sort(compareLocation);
+                }
+                break;
+
+              case "avail":
+                if (order == "asc") {
+                  function compareSpace(a, b) {
+                    if (a.space > b.space) return 1;
+                    if (a.space < b.space) return -1;
+                    return 0;
+                  }
+                  return LessonsArray.sort(compareSpace);
+                } else {
+                  function compareSpace(a, b) {
+                    if (a.space > b.space) return -1;
+                    if (a.space < b.space) return 1;
+                    return 0;
+                  }
+                  return LessonsArray.sort(compareSpace);
+                }
+                break;
+
+              default:
+                if (order == "asc") {
+                  function compareSubject(a, b) {
+                    if (a.subject > b.subject) return 1;
+                    if (a.subject < b.subject) return -1;
+                    return 0;
+                  }
+                  return LessonsArray.sort(compareSubject);
+                } else {
+                  function compareSubject(a, b) {
+                    if (a.subject > b.subject) return -1;
+                    if (a.subject < b.subject) return 1;
+                    return 0;
+                  }
+                  return LessonsArray.sort(compareSubject);
+                }
+                break;
+            }
+          },
+
+          cartCount(id) {
+            let count = 0;
+            for (let i = 0; i < this.cart.length; i++) {
+              if (this.cart[i] === id) {
+                count++;
+              }
+            }
+            return count;
+          },
+          checkout: function () {
+            alert("Form has been submitted");
+          },
+        },
+        computed: {
+          cartItemCount() {
+            return this.cart.length;
+          },
+          checkout() {
+            if (this.order.name && this.order.number) {
+              return true;
+            } else {
+              return false;
+            }
+          },
+        },
+      });
+    </script>
+  </body>
+</html>

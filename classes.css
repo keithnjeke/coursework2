@@ -1,0 +1,39 @@
+/*.lesson {
+  background-color: #ffffff;
+  border: 1px solid blue;
+  border-radius: 24px;
+  padding: 24px;
+  width: 250px;
+}*/
+* {
+  box-sizing: border-box;
+}
+
+.lesson {
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  padding: 16px 10px;
+  text-align: center;
+  background-color: #ffffff;
+  border: 1px solid coral;
+  border-radius: 24px;
+}
+.lesson img {
+  float: right;
+  width: 30%;
+  text-align: right;
+}
+
+.column {
+  float: left;
+  width: 25%;
+  padding: 0 10px 20px 10px;
+}
+
+.button {
+  background-color: #ffffff;
+  border: 3px solid coral;
+  border-radius: 18px;
+  padding: 0 10px 20px 10px;
+}
+
+
